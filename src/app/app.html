@@ -13,17 +13,13 @@
     <nav class="nav">
       <p class="nav-label">Workspace</p>
       @for (item of nav; track item.id) {
-        <button
-          class="nav-item"
-          [class.active]="activeNav() === item.id"
-          (click)="activeNav.set(item.id); sidebarOpen.set(false)"
-        >
+        <a class="nav-item" [routerLink]="item.id" routerLinkActive="active">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons[item.icon]"/></svg>
           <span>{{ item.label }}</span>
           @if (item.badge) {
             <em class="badge">{{ item.badge }}</em>
           }
-        </button>
+        </a>
       }
     </nav>
 
@@ -52,8 +48,25 @@
 
       <div class="search">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="icons.search"/></svg>
-        <input type="search" placeholder="Search orders, customers, reports…" />
+        <input
+          type="search"
+          placeholder="Jump to a page…"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
         <kbd>⌘K</kbd>
+        @if (results().length) {
+          <ul class="jump">
+            @for (r of results(); track r.id) {
+              <li>
+                <a [routerLink]="r.id" (click)="search.set('')">
+                  <svg viewBox="0 0 24 24"><path [attr.d]="icons[r.icon]"/></svg>
+                  {{ r.label }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
       </div>
 
       <div class="topbar-actions">
@@ -63,7 +76,7 @@
         </button>
 
         <div class="theme-switch">
-          <button class="theme-btn" (click)="togglePicker()" [attr.aria-expanded]="pickerOpen()">
+          <button class="theme-btn" (click)="pickerOpen.set(!pickerOpen())" [attr.aria-expanded]="pickerOpen()">
             <svg viewBox="0 0 24 24"><path [attr.d]="icons.palette"/></svg>
             <span class="theme-name">{{ theme().name }}</span>
             <span class="swatch-row">
@@ -81,7 +94,7 @@
               </div>
               <div class="theme-grid">
                 @for (t of themes; track t.id) {
-                  <button class="theme-opt" [class.selected]="t.id === themeId()" (click)="setTheme(t)">
+                  <button class="theme-opt" [class.selected]="t.id === theme().id" (click)="selectTheme(t)">
                     <span class="theme-preview" [style.background]="t.surface">
                       <span class="tp-side" [style.background]="t.bg"></span>
                       <span class="tp-dots">
@@ -94,7 +107,7 @@
                       <strong>{{ t.name }}</strong>
                       <span>{{ t.dark ? 'Dark' : 'Light' }}</span>
                     </span>
-                    @if (t.id === themeId()) {
+                    @if (t.id === theme().id) {
                       <svg class="check" viewBox="0 0 24 24"><path [attr.d]="icons.check"/></svg>
                     }
                   </button>
@@ -112,152 +125,11 @@
     <div class="content">
       <div class="page-head">
         <div>
-          <p class="eyebrow">Overview</p>
-          <h1>Good evening, Julia</h1>
-          <p class="sub">Here's what happened across your workspace today.</p>
-        </div>
-        <div class="page-actions">
-          <div class="segmented">
-            @for (r of ranges; track r) {
-              <button [class.active]="activeRange() === r" (click)="activeRange.set(r)">{{ r }}</button>
-            }
-          </div>
-          <button class="btn btn-primary">
-            Export report
-            <svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow"/></svg>
-          </button>
+          <p class="eyebrow">{{ pageEyebrow() }}</p>
+          <h1>{{ pageTitle() }}</h1>
         </div>
       </div>
-
-      <section class="kpi-grid">
-        @for (k of kpis; track k.label) {
-          <article class="card kpi">
-            <div class="kpi-head">
-              <span class="kpi-label">{{ k.label }}</span>
-              <span class="delta" [class.neg]="k.delta < 0">
-                <svg viewBox="0 0 24 24"><path [attr.d]="k.delta < 0 ? icons.down : icons.up"/></svg>
-                {{ k.delta > 0 ? '+' : '' }}{{ k.delta }}%
-              </span>
-            </div>
-            <strong class="kpi-value">{{ k.value }}</strong>
-            <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none">
-              <path [attr.d]="linePath(k.spark, 120, 32)" fill="none" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </article>
-        }
-      </section>
-
-      <section class="grid-main">
-        <article class="card chart">
-          <div class="card-head">
-            <div>
-              <h2>Traffic &amp; Revenue</h2>
-              <p class="muted">Sessions vs. attributed revenue</p>
-            </div>
-            <div class="legend">
-              <span><i class="lg-a"></i> Sessions</span>
-              <span><i class="lg-b"></i> Revenue</span>
-            </div>
-          </div>
-          <div class="bars">
-            @for (d of traffic; track d.label) {
-              <div class="bar-group">
-                <div class="bar-pair">
-                  <div class="bar bar-a" [style.height.%]="(d.a / maxTraffic) * 100"></div>
-                  <div class="bar bar-b" [style.height.%]="(d.b / maxTraffic) * 100"></div>
-                </div>
-                <span class="bar-label">{{ d.label }}</span>
-              </div>
-            }
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2>Channels</h2>
-              <p class="muted">Share of total sessions</p>
-            </div>
-          </div>
-          <div class="channels">
-            @for (c of channels; track c.label) {
-              <div class="channel">
-                <div class="channel-row">
-                  <span>{{ c.label }}</span>
-                  <strong>{{ c.share }}%</strong>
-                </div>
-                <div class="track"><div class="fill" [style.width.%]="c.share"></div></div>
-              </div>
-            }
-          </div>
-        </article>
-      </section>
-
-      <section class="grid-bottom">
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2>Recent orders</h2>
-              <p class="muted">Latest transactions across all plans</p>
-            </div>
-            <button class="btn btn-ghost btn-sm">View all</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Customer</th>
-                  <th>Plan</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (o of orders; track o.id) {
-                  <tr>
-                    <td>
-                      <div class="cust">
-                        <span class="avatar avatar-xs">{{ o.initials }}</span>
-                        <span class="cust-text">
-                          <strong>{{ o.customer }}</strong>
-                          <span>{{ o.id }}</span>
-                        </span>
-                      </div>
-                    </td>
-                    <td>{{ o.plan }}</td>
-                    <td class="num">{{ money(o.amount) }}</td>
-                    <td>
-                      <span class="pill" [ngClass]="o.status.toLowerCase()">{{ o.status }}</span>
-                    </td>
-                    <td class="muted">{{ o.date }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2>Activity</h2>
-              <p class="muted">Workspace feed</p>
-            </div>
-          </div>
-          <ul class="feed">
-            @for (a of activity; track a.who + a.when) {
-              <li>
-                <span class="avatar avatar-xs">{{ a.initials }}</span>
-                <div>
-                  <p><strong>{{ a.who }}</strong> {{ a.action }}</p>
-                  <span class="muted">{{ a.when }}</span>
-                </div>
-              </li>
-            }
-          </ul>
-        </article>
-      </section>
+      <router-outlet />
     </div>
   </main>
 </div>

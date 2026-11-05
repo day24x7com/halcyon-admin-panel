@@ -1,0 +1,136 @@
+<div class="toolbar">
+  <p class="lede">Welcome back. Here's what happened across your workspace this week.</p>
+  <div class="toolbar-actions">
+    <div class="segmented">
+      @for (r of ranges; track r) {
+        <button [class.active]="range() === r" (click)="range.set(r)">{{ r }}</button>
+      }
+    </div>
+    <button class="btn btn-primary">
+      Export report
+      <svg viewBox="0 0 24 24"><path [attr.d]="icons.arrow"/></svg>
+    </button>
+  </div>
+</div>
+
+<section class="kpi-grid">
+  @for (k of kpis; track k.label) {
+    <article class="card kpi">
+      <div class="kpi-head">
+        <span class="kpi-label">{{ k.label }}</span>
+        <span class="delta" [class.neg]="k.delta < 0">
+          <svg viewBox="0 0 24 24"><path [attr.d]="k.delta < 0 ? icons.down : icons.up"/></svg>
+          {{ k.delta > 0 ? '+' : '' }}{{ k.delta }}%
+        </span>
+      </div>
+      <strong class="kpi-value">{{ k.value }}</strong>
+      <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none">
+        <path [attr.d]="linePath(k.spark, 120, 32)" fill="none" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </article>
+  }
+</section>
+
+<section class="grid-main">
+  <article class="card chart">
+    <div class="card-head">
+      <div>
+        <h2>Traffic &amp; Revenue</h2>
+        <p class="muted">Sessions vs. attributed revenue</p>
+      </div>
+      <div class="legend">
+        <span><i class="lg-a"></i> Sessions</span>
+        <span><i class="lg-b"></i> Revenue</span>
+      </div>
+    </div>
+    <div class="bars">
+      @for (d of traffic; track d.label) {
+        <div class="bar-group">
+          <div class="bar-pair">
+            <div class="bar bar-a" [style.height.%]="(d.a / maxTraffic) * 100"></div>
+            <div class="bar bar-b" [style.height.%]="(d.b / maxTraffic) * 100"></div>
+          </div>
+          <span class="bar-label">{{ d.label }}</span>
+        </div>
+      }
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Channels</h2>
+        <p class="muted">Share of total sessions</p>
+      </div>
+    </div>
+    <div class="channels">
+      @for (c of channels; track c.label) {
+        <div class="channel">
+          <div class="channel-row">
+            <span>{{ c.label }}</span>
+            <strong>{{ c.share }}%</strong>
+          </div>
+          <div class="track"><div class="fill" [style.width.%]="c.share"></div></div>
+        </div>
+      }
+    </div>
+  </article>
+</section>
+
+<section class="grid-bottom">
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Recent orders</h2>
+        <p class="muted">Latest transactions across all plans</p>
+      </div>
+      <a class="btn btn-ghost btn-sm" routerLink="/orders">View all</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Customer</th><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          @for (o of orders; track o.id) {
+            <tr>
+              <td>
+                <div class="cust">
+                  <span class="avatar avatar-xs">{{ o.initials }}</span>
+                  <span class="cust-text">
+                    <strong>{{ o.customer }}</strong>
+                    <span>{{ o.id }}</span>
+                  </span>
+                </div>
+              </td>
+              <td>{{ o.plan }}</td>
+              <td class="num">{{ money(o.amount) }}</td>
+              <td><app-pill [label]="o.status" [tone]="tone(o.status)"/></td>
+              <td class="muted">{{ o.date }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Activity</h2>
+        <p class="muted">Workspace feed</p>
+      </div>
+    </div>
+    <ul class="feed">
+      @for (a of activity; track a.who + a.when) {
+        <li>
+          <span class="avatar avatar-xs">{{ a.initials }}</span>
+          <div>
+            <p><strong>{{ a.who }}</strong> {{ a.action }}</p>
+            <span class="muted">{{ a.when }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+  </article>
+</section>

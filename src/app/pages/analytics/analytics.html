@@ -1,0 +1,149 @@
+<div class="toolbar">
+  <p class="muted lede">Traffic, engagement and revenue performance for the selected window.</p>
+  <div class="segmented">
+    @for (r of ranges; track r) {
+      <button [class.active]="range() === r" (click)="range.set(r)">{{ r }}</button>
+    }
+  </div>
+</div>
+
+<section class="mini-stats">
+  @for (h of head; track h.label) {
+    <article class="card stat">
+      <span class="muted">{{ h.label }}</span>
+      <div class="stat-row">
+        <strong>{{ h.value }}</strong>
+        <span class="delta" [class.neg]="h.delta < 0">{{ h.delta > 0 ? '+' : '' }}{{ h.delta }}%</span>
+      </div>
+    </article>
+  }
+</section>
+
+<section class="grid-main">
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Revenue trend</h2>
+        <p class="muted">Attributed revenue per period</p>
+      </div>
+      <div class="legend"><span><i class="lg-a"></i> Revenue</span></div>
+    </div>
+    <svg class="area" viewBox="0 0 640 200" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="var(--primary)" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path [attr.d]="areaFill()" fill="url(#areaGrad)" />
+      <path [attr.d]="areaPath()" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" />
+    </svg>
+    <div class="axis">
+      @for (m of ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; track m) {
+        <span>{{ m }}</span>
+      }
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Sessions by channel</h2>
+        <p class="muted">Share of total traffic</p>
+      </div>
+    </div>
+    <div class="donut-wrap">
+      <svg class="donut" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r="56" fill="none" stroke="var(--surface-alt)" stroke-width="16" />
+        @for (d of donut(); track d.label; let i = $index) {
+          <circle
+            cx="70" cy="70" r="56" fill="none"
+            [attr.stroke]="donutColors[i % donutColors.length]"
+            stroke-width="16"
+            [attr.stroke-dasharray]="d.dash"
+            [attr.stroke-dashoffset]="d.offset"
+            transform="rotate(-90 70 70)"
+            stroke-linecap="butt"
+          />
+        }
+        <text x="70" y="66" text-anchor="middle" class="donut-num">186k</text>
+        <text x="70" y="84" text-anchor="middle" class="donut-cap">sessions</text>
+      </svg>
+      <ul class="donut-legend">
+        @for (d of donut(); track d.label; let i = $index) {
+          <li>
+            <i [style.background]="donutColors[i % donutColors.length]"></i>
+            <span>{{ d.label }}</span>
+            <strong>{{ d.share }}%</strong>
+          </li>
+        }
+      </ul>
+    </div>
+  </article>
+</section>
+
+<section class="grid-bottom">
+  <article class="card">
+    <div class="card-head">
+      <div>
+        <h2>Top pages</h2>
+        <p class="muted">Most visited destinations</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path</th><th>Views</th><th>Bounce</th><th>Quality</th></tr></thead>
+        <tbody>
+          @for (p of pages; track p.path) {
+            <tr>
+              <td class="path">{{ p.path }}</td>
+              <td class="num">{{ p.views.toLocaleString('en-US') }}</td>
+              <td class="num">{{ p.bounce }}%</td>
+              <td>
+                <div class="track"><div class="fill" [style.width.%]="100 - p.bounce"></div></div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <div class="side-stack">
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <h2>Plan mix</h2>
+          <p class="muted">Revenue share by plan</p>
+        </div>
+      </div>
+      <div class="channels">
+        @for (p of plans; track p.label) {
+          <div class="channel">
+            <div class="channel-row"><span>{{ p.label }}</span><strong>{{ p.share }}%</strong></div>
+            <div class="track"><div class="fill" [style.width.%]="p.share"></div></div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <div>
+          <h2>Devices</h2>
+          <p class="muted">Sessions by device type</p>
+        </div>
+      </div>
+      <div class="devices">
+        @for (d of devices; track d.label) {
+          <div class="device">
+            <div class="device-ring" [style.--pct]="d.share">
+              <span>{{ d.share }}%</span>
+            </div>
+            <p>{{ d.label }}</p>
+          </div>
+        }
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,138 @@
+<div class="filters">
+  <div class="search-inline">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.search"/></svg>
+    <input
+      class="input"
+      type="search"
+      placeholder="Search by customer, email or order id…"
+      [value]="query()"
+      (input)="setQuery($any($event.target).value)"
+    />
+  </div>
+  <div class="status-tabs">
+    @for (s of statuses; track s) {
+      <button [class.active]="status() === s" (click)="setStatus(s)">
+        {{ s }}
+        <em>{{ counts()[s] }}</em>
+      </button>
+    }
+  </div>
+  <button class="btn btn-primary">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus"/></svg>
+    New order
+  </button>
+</div>
+
+<article class="card table-card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('id')">
+            Order
+            @if (sortKey() === 'id') { <span class="sort">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span> }
+          </th>
+          <th class="sortable" (click)="sortBy('customer')">
+            Customer
+            @if (sortKey() === 'customer') { <span class="sort">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span> }
+          </th>
+          <th>Plan</th>
+          <th class="sortable" (click)="sortBy('amount')">
+            Amount
+            @if (sortKey() === 'amount') { <span class="sort">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span> }
+          </th>
+          <th class="sortable" (click)="sortBy('status')">
+            Status
+            @if (sortKey() === 'status') { <span class="sort">{{ sortDir() === 'asc' ? '↑' : '↓' }}</span> }
+          </th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of paged(); track o.id) {
+          <tr (click)="selected.set(o)">
+            <td class="mono">{{ o.id }}</td>
+            <td>
+              <div class="cust">
+                <span class="avatar avatar-xs">{{ o.initials }}</span>
+                <span class="cust-text">
+                  <strong>{{ o.customer }}</strong>
+                  <span>{{ o.email }}</span>
+                </span>
+              </div>
+            </td>
+            <td>{{ o.plan }}</td>
+            <td class="num">{{ money(o.amount) }}</td>
+            <td><app-pill [label]="o.status" [tone]="tone(o.status)"/></td>
+            <td class="muted">{{ o.date }}</td>
+            <td class="chev">
+              <svg viewBox="0 0 24 24"><path [attr.d]="icons.chevron"/></svg>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">No orders match your filters.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="pager">
+    <span class="muted">{{ rangeLabel() }}</span>
+    <div class="pager-btns">
+      <button class="btn btn-ghost btn-sm" (click)="go(page() - 1)" [disabled]="page() === 1">Previous</button>
+      @for (p of [].constructor(pages()); track $index) {
+        <button class="page-btn" [class.active]="page() === $index + 1" (click)="go($index + 1)">
+          {{ $index + 1 }}
+        </button>
+      }
+      <button class="btn btn-ghost btn-sm" (click)="go(page() + 1)" [disabled]="page() === pages()">Next</button>
+    </div>
+  </footer>
+</article>
+
+<app-drawer
+  [open]="!!selected()"
+  [title]="selected()?.id ?? ''"
+  eyebrow="Order details"
+  (closed)="selected.set(null)"
+>
+  @if (selected(); as o) {
+    <div class="detail">
+      <div class="detail-row">
+        <span class="muted">Status</span>
+        <app-pill [label]="o.status" [tone]="tone(o.status)"/>
+      </div>
+      <div class="detail-row">
+        <span class="muted">Customer</span>
+        <strong>{{ o.customer }}</strong>
+      </div>
+      <div class="detail-row">
+        <span class="muted">Email</span>
+        <span>{{ o.email }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="muted">Plan</span>
+        <span>{{ o.plan }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="muted">Items</span>
+        <span>{{ o.items }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="muted">Date placed</span>
+        <span>{{ o.date }}</span>
+      </div>
+      <div class="detail-total">
+        <span>Total</span>
+        <strong>{{ money(o.amount) }}</strong>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-block">Refund order</button>
+        <button class="btn btn-ghost btn-block">Contact customer</button>
+      </div>
+    </div>
+  }
+</app-drawer>

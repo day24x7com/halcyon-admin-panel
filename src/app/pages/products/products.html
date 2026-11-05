@@ -1,0 +1,59 @@
+<section class="mini-stats">
+  @for (s of summary(); track s.label) {
+    <article class="card stat">
+      <span class="muted">{{ s.label }}</span>
+      <strong>{{ s.value }}</strong>
+    </article>
+  }
+</section>
+
+<div class="filters">
+  <div class="search-inline">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.search"/></svg>
+    <input
+      class="input"
+      type="search"
+      placeholder="Search product or SKU…"
+      [value]="query()"
+      (input)="query.set($any($event.target).value)"
+    />
+  </div>
+  <div class="status-tabs">
+    @for (c of categories; track c) {
+      <button [class.active]="category() === c" (click)="category.set(c)">{{ c }}</button>
+    }
+  </div>
+  <button class="btn btn-primary">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus"/></svg>
+    Add product
+  </button>
+</div>
+
+<div class="prod-grid">
+  @for (p of filtered(); track p.id) {
+    <article class="card prod">
+      <div class="thumb" [class.sold-out]="p.stock === 0">
+        <span>{{ p.glyph }}</span>
+        @if (p.stock === 0) { <em>Sold out</em> }
+      </div>
+      <div class="prod-body">
+        <div class="prod-top">
+          <h3>{{ p.name }}</h3>
+          <app-pill [label]="stockLabel(p)" [tone]="stockTone(p)"/>
+        </div>
+        <p class="muted sku">{{ p.sku }} · {{ p.category }}</p>
+        <div class="rating">
+          <svg viewBox="0 0 24 24"><path [attr.d]="icons.star"/></svg>
+          <span>{{ p.rating }}</span>
+          <span class="muted">· {{ p.sold.toLocaleString('en-US') }} sold</span>
+        </div>
+        <div class="prod-foot">
+          <strong class="price">{{ money(p.price) }}</strong>
+          <span class="muted stock">{{ p.stock }} in stock</span>
+        </div>
+      </div>
+    </article>
+  } @empty {
+    <p class="muted empty">No products match your filters.</p>
+  }
+</div>

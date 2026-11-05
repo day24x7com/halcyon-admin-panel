@@ -1,0 +1,79 @@
+<section class="mini-stats">
+  @for (s of stats(); track s.label) {
+    <article class="card stat">
+      <span class="muted">{{ s.label }}</span>
+      <strong>{{ s.value }}</strong>
+    </article>
+  }
+</section>
+
+<div class="filters">
+  <div class="search-inline">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.search"/></svg>
+    <input
+      class="input"
+      type="search"
+      placeholder="Search name, email or company…"
+      [value]="query()"
+      (input)="setQuery($any($event.target).value)"
+    />
+  </div>
+  <div class="status-tabs">
+    @for (p of plans; track p) {
+      <button [class.active]="plan() === p" (click)="plan.set(p)">{{ p }}</button>
+    }
+  </div>
+  <button class="btn btn-primary">
+    <svg viewBox="0 0 24 24"><path [attr.d]="icons.plus"/></svg>
+    Add customer
+  </button>
+</div>
+
+<div class="cust-grid">
+  @for (c of filtered(); track c.id) {
+    <article class="card cust-card" (click)="selected.set(c)">
+      <header>
+        <span class="avatar">{{ initials(c.name) }}</span>
+        <app-pill [label]="c.status" [tone]="tone(c.status)"/>
+      </header>
+      <h3>{{ c.name }}</h3>
+      <p class="muted">{{ c.email }}</p>
+      <p class="company">{{ c.company }} · {{ c.plan }}</p>
+      <div class="cust-meta">
+        <div>
+          <span class="muted">Spend</span>
+          <strong>{{ money(c.spend) }}</strong>
+        </div>
+        <div>
+          <span class="muted">Orders</span>
+          <strong>{{ c.orders }}</strong>
+        </div>
+        <div>
+          <span class="muted">Since</span>
+          <strong>{{ c.joined }}</strong>
+        </div>
+      </div>
+    </article>
+  } @empty {
+    <p class="muted empty">No customers match your search.</p>
+  }
+</div>
+
+<app-drawer [open]="!!selected()" [title]="selected()?.name ?? ''" eyebrow="Customer profile" (closed)="selected.set(null)">
+  @if (selected(); as c) {
+    <div class="profile">
+      <span class="avatar avatar-lg">{{ initials(c.name) }}</span>
+      <p class="muted profile-mail">{{ c.email }}</p>
+      <div class="detail-row"><span class="muted">Company</span><strong>{{ c.company }}</strong></div>
+      <div class="detail-row"><span class="muted">Plan</span><span>{{ c.plan }}</span></div>
+      <div class="detail-row"><span class="muted">Status</span><app-pill [label]="c.status" [tone]="tone(c.status)"/></div>
+      <div class="detail-row"><span class="muted">Lifetime spend</span><strong>{{ money(c.spend) }}</strong></div>
+      <div class="detail-row"><span class="muted">Orders</span><span>{{ c.orders }}</span></div>
+      <div class="detail-row"><span class="muted">Customer since</span><span>{{ c.joined }}</span></div>
+      <div class="detail-actions">
+        <button class="btn btn-primary btn-block">Send email</button>
+        <button class="btn btn-ghost btn-block">View orders</button>
+      </div>
+    </div>
+  }
+</app-drawer>

@@ -1,0 +1,130 @@
+<div class="settings-layout">
+  <nav class="tabs">
+    @for (t of tabs; track t) {
+      <button [class.active]="tab() === t" (click)="tab.set(t)">{{ t }}</button>
+    }
+  </nav>
+
+  <div class="panels">
+    @if (tab() === 'General') {
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Profile</h2>
+            <p class="muted">How you appear to the rest of the workspace</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="name">Full name</label>
+            <input class="input" id="name" [(ngModel)]="profile.name" />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input class="input" id="email" type="email" [(ngModel)]="profile.email" />
+          </div>
+          <div class="field">
+            <label for="company">Company</label>
+            <input class="input" id="company" [(ngModel)]="profile.company" />
+          </div>
+          <div class="field">
+            <label for="tz">Timezone</label>
+            <select class="select" id="tz" [(ngModel)]="profile.timezone">
+              @for (z of timezones; track z) {
+                <option [value]="z">{{ z }}</option>
+              }
+            </select>
+          </div>
+          <div class="field span-2">
+            <label for="bio">Bio</label>
+            <textarea class="textarea" id="bio" [(ngModel)]="profile.bio"></textarea>
+          </div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-ghost">Cancel</button>
+          <button class="btn btn-primary" (click)="save()">{{ saved() ? 'Saved ✓' : 'Save changes' }}</button>
+        </div>
+      </article>
+    }
+
+    @if (tab() === 'Appearance') {
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Theme</h2>
+            <p class="muted">Pick a Theme Factory palette — applied instantly across the app</p>
+          </div>
+        </div>
+        <div class="theme-list">
+          @for (t of themes; track t.id) {
+            <button class="theme-card" [class.selected]="t.id === current().id" (click)="selectTheme(t)">
+              <span class="theme-swatches">
+                @for (s of t.swatches; track $index) {
+                  <i [style.background]="s"></i>
+                }
+              </span>
+              <span class="theme-text">
+                <strong>{{ t.name }}</strong>
+                <span>{{ t.description }}</span>
+              </span>
+              <span class="theme-mode">{{ t.dark ? 'Dark' : 'Light' }}</span>
+              @if (t.id === current().id) {
+                <svg class="tick" viewBox="0 0 24 24"><path [attr.d]="icons.check"/></svg>
+              }
+            </button>
+          }
+        </div>
+      </article>
+    }
+
+    @if (tab() === 'Notifications') {
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Email notifications</h2>
+            <p class="muted">Choose what lands in your inbox</p>
+          </div>
+        </div>
+        <ul class="toggles">
+          @for (t of toggles; track t.key) {
+            <li>
+              <div>
+                <strong>{{ t.label }}</strong>
+                <span class="muted">{{ t.hint }}</span>
+              </div>
+              <button
+                class="switch"
+                [class.on]="t.on"
+                role="switch"
+                [attr.aria-checked]="t.on"
+                (click)="toggle(t.key)"
+              ><i></i></button>
+            </li>
+          }
+        </ul>
+      </article>
+    }
+
+    @if (tab() === 'Billing') {
+      <article class="card">
+        <div class="card-head">
+          <div>
+            <h2>Current plan</h2>
+            <p class="muted">Pro trial — 9 days remaining</p>
+          </div>
+          <span class="plan-badge">Pro</span>
+        </div>
+        <div class="plan-rows">
+          <div class="plan-row"><span class="muted">Seats</span><strong>12 of 25</strong></div>
+          <div class="plan-row"><span class="muted">Next invoice</span><strong>$240.00 on Dec 04, 2026</strong></div>
+          <div class="plan-row"><span class="muted">Payment method</span><strong>Visa ending 4242</strong></div>
+          <div class="plan-row"><span class="muted">Billing email</span><strong>billing@halcyon.app</strong></div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-ghost">Download invoices</button>
+          <button class="btn btn-primary">Upgrade plan</button>
+        </div>
+      </article>
+    }
+  </div>
+</div>
