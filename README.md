@@ -1,5 +1,7 @@
 # Halcyon — Angular Admin Panel
 
+**Live demo:** https://day24x7com.github.io/halcyon-admin-panel/
+
 A responsive admin dashboard styled with the **Theme Factory** palettes. All 10 curated themes
 are built in and can be switched live from the palette button in the top bar.
 
