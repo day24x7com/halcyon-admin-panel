@@ -1,0 +1,96 @@
+import { Component, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { THEMES, Theme, themeVars } from './themes';
+import { ACTIVITY, CHANNELS, KPIS, ORDERS, TRAFFIC_SERIES } from './dashboard-data';
+
+type IconName =
+  | 'dashboard' | 'analytics' | 'orders' | 'customers' | 'products' | 'settings'
+  | 'search' | 'bell' | 'palette' | 'arrow' | 'up' | 'down' | 'menu' | 'check';
+
+const ICONS: Record<IconName, string> = {
+  dashboard: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z',
+  analytics: 'M5 21V9h4v12H5zm5 0V3h4v18h-4zm5 0v-8h4v8h-4z',
+  orders: 'M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.2 14h9.5c.8 0 1.4-.4 1.7-1.1L21.7 5H5.2L4.3 3H1v2h2.2l3.7 8.6-1.4 2.6c-.6 1.1.2 2.4 1.4 2.4H19v-2H7.2z',
+  customers: 'M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-8 1a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm8 1c-2.7 0-8 1.3-8 4v3h16v-3c0-2.7-5.3-4-8-4zm-8 .5c-.3 0-.7 0-1 .1 1.2.9 2 2.1 2 3.4v3H2v-3c0-2 2.7-3.5 6-3.5z',
+  products: 'M12 2 2 7l10 5 10-5-10-5zm0 7.7L4.5 6 12 2.3 19.5 6 12 9.7zM2 12l10 5 10-5-2-1L12 15l-8-4-2 1zm0 5l10 5 10-5-2-1-8 4-8-4-2 1z',
+  settings: 'M19.4 13a7.7 7.7 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.4 7.4 0 0 0-1.7-1l-.4-2.7a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4l-.4 2.7a7.4 7.4 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.7 7.7 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.8 1.7 1l.4 2.7c0 .2.2.4.5.4h4c.3 0 .5-.2.5-.4l.4-2.7c.6-.2 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z',
+  search: 'M15.5 14h-.8l-.3-.3a6.5 6.5 0 1 0-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z',
+  bell: 'M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11a6 6 0 0 0-5-5.9V4a1 1 0 0 0-2 0v1.1A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z',
+  palette: 'M12 3a9 9 0 0 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.2 0-1 .8-1.5 1.8-1.5H16a5 5 0 0 0 5-5c0-4.4-4-7-9-7zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z',
+  arrow: 'M5 12h14m-6-6 6 6-6 6',
+  up: 'M12 5l7 7h-4v7h-6v-7H5l7-7z',
+  down: 'M12 19l-7-7h4V5h6v7h4l-7 7z',
+  menu: 'M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z',
+  check: 'M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z',
+};
+
+@Component({
+  selector: 'app-root',
+  imports: [CommonModule],
+  templateUrl: './app.html',
+  styleUrl: './app.scss',
+})
+export class App {
+  readonly icons = ICONS;
+  readonly themes = THEMES;
+  readonly kpis = KPIS;
+  readonly orders = ORDERS;
+  readonly activity = ACTIVITY;
+  readonly channels = CHANNELS;
+  readonly traffic = TRAFFIC_SERIES;
+  readonly maxTraffic = Math.max(...TRAFFIC_SERIES.flatMap((t) => [t.a, t.b]));
+
+  readonly themeId = signal('ocean-depths');
+  readonly theme = computed(() => this.themes.find((t) => t.id === this.themeId()) ?? this.themes[0]);
+  readonly vars = computed(() => themeVars(this.theme()));
+  readonly pickerOpen = signal(false);
+  readonly sidebarOpen = signal(false);
+  readonly activeNav = signal('dashboard');
+  readonly activeRange = signal('7d');
+  readonly ranges = ['24h', '7d', '30d', '90d'];
+  readonly nav: { id: string; label: string; icon: IconName; badge?: string }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+    { id: 'analytics', label: 'Analytics', icon: 'analytics' },
+    { id: 'orders', label: 'Orders', icon: 'orders', badge: '6' },
+    { id: 'customers', label: 'Customers', icon: 'customers' },
+    { id: 'products', label: 'Products', icon: 'products' },
+    { id: 'settings', label: 'Settings', icon: 'settings' },
+  ];
+
+  setTheme(t: Theme) {
+    this.themeId.set(t.id);
+  }
+
+  togglePicker() {
+    this.pickerOpen.update((v) => !v);
+  }
+
+  closePicker() {
+    this.pickerOpen.set(false);
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen.update((v) => !v);
+  }
+
+  money(n: number) {
+    return '$' + n.toLocaleString('en-US');
+  }
+
+  linePath(values: number[], w: number, h: number) {
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const span = max - min || 1;
+    return values
+      .map((v, i) => {
+        const x = (i / (values.length - 1)) * w;
+        const y = h - ((v - min) / span) * (h - 4) - 2;
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(' ');
+  }
+
+  barWidth(share: number) {
+    return share + '%';
+  }
+}
